@@ -34,8 +34,18 @@ app.get("/",(req,res)=>{
 res.render("listings/home.ejs");
 });
 
+const validateListing=(req,res,next)=>{
+    let {error}=listingSchema.validate(req.body);
+    if(error){
+        let errMsg=error.details.map((el)=>el.message).join(",");
+        throw new ExpressError(404,errMsg);
+    }
+    else{
+        next();
+    }
+}
 // Index Route
-app.get("/listings", wrapAsync(async(req,res)=>{
+app.get("/listings", validateListing,wrapAsync(async(req,res)=>{
     const allListings=await Listing.find({});
     res.render("listings/index.ejs",{allListings});
 }));
@@ -46,7 +56,7 @@ app.get("/listings/new",(req,res)=>{
 });
 
 // Show Route
-app.get("/listings/:id",wrapAsync(async(req,res)=>{
+app.get("/listings/:id",validateListing,wrapAsync(async(req,res)=>{
     let {id}=req.params;
     const listing=await Listing.findById(id);
     res.render("listings/show.ejs",{listing});
@@ -54,18 +64,14 @@ app.get("/listings/:id",wrapAsync(async(req,res)=>{
 }));
 
 // Create Route
-app.post("/listings",wrapAsync(async(req,res,next)=>{
-    let result=listingSchema.validate(req.body);
-    if(result.error){
-        throw new ExpressError(404,result.error);
-    }
+app.post("/listings",validateListing,wrapAsync(async(req,res,next)=>{
     const newListing=new Listing(req.body.listing);
     await newListing.save();
     res.redirect("/listings");
 }));
 
 // Edit Route
-app.get("/listings/:id/edit", wrapAsync(async(req,res)=>{
+app.get("/listings/:id/edit", validateListing,wrapAsync(async(req,res)=>{
     let {id}=req.params;
     const listing=await Listing.findById(id);
     res.render("listings/edit.ejs",{listing});
@@ -73,21 +79,19 @@ app.get("/listings/:id/edit", wrapAsync(async(req,res)=>{
 }));
 
 // Update Route
-app.put("/listings/:id",wrapAsync(async(req,res)=>{
-    if(!req.body.listing){
-        throw new ExpressError(404,"Send Valid data for listing")
-    }
+app.put("/listings/:id",validateListing,wrapAsync(async(req,res)=>{
     let {id}=req.params;
     await Listing.findByIdAndUpdate(id, { ...req.body.listing});
     res.redirect(`/listings/${id}`);
 }));
 
 // delete Route
-app.delete("/listings/:id", wrapAsync(async(req,res)=>{
+app.delete("/listings/:id", validateListing,wrapAsync(async(req,res)=>{
     let {id}=req.params;
     await Listing.findByIdAndDelete(id);
     res.redirect("/listings");
 }));
+
 app.all("*",(req,res,next)=>{
     next(new ExpressError(404,"page not found")); 
 })
