@@ -45,7 +45,7 @@ const validateListing=(req,res,next)=>{
     }
 }
 // Index Route
-app.get("/listings", validateListing,wrapAsync(async(req,res)=>{
+app.get("/listings", wrapAsync(async(req,res)=>{
     const allListings=await Listing.find({});
     res.render("listings/index.ejs",{allListings});
 }));
@@ -56,7 +56,7 @@ app.get("/listings/new",(req,res)=>{
 });
 
 // Show Route
-app.get("/listings/:id",validateListing,wrapAsync(async(req,res)=>{
+app.get("/listings/:id",wrapAsync(async(req,res)=>{
     let {id}=req.params;
     const listing=await Listing.findById(id);
     res.render("listings/show.ejs",{listing});
@@ -86,7 +86,7 @@ app.put("/listings/:id",validateListing,wrapAsync(async(req,res)=>{
 }));
 
 // delete Route
-app.delete("/listings/:id", validateListing,wrapAsync(async(req,res)=>{
+app.delete("/listings/:id",wrapAsync(async(req,res)=>{
     let {id}=req.params;
     await Listing.findByIdAndDelete(id);
     res.redirect("/listings");
