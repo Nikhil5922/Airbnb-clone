@@ -2,12 +2,14 @@ const express=require("express");
 const app=express();
 const users=require("./routes/user.js");
 const posts=require("./routes/post.js");
-const cookieParser=require("cookie-parser");
-app.use(cookieParser);
+const session=require("express-session");
+const flash=require("connect-flash");
 
-app.get("/",(req,res)=>{
-    app.res("Hi, I am root!");
-})
+app.use(flash());
+
+
+
+
 app.use("/users",users);
 app.use("/posts",users);
 
